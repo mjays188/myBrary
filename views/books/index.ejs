@@ -1,0 +1,14 @@
+<!-- Display all the books in a paginated format, along with the search option -->
+<%- include('../partials/header')%>
+<h1>Hello from all books page</h1>
+<% if(Object.keys(books).length === 0) {%>
+    <p>No books in database</p>
+<% } else { %>
+    <ul>
+        <% books.forEach(book => { %>
+            <li><a href="/books/<%=  book._id %>" ><%= book.name %></a></li> 
+        <% }); %> 
+        </ul>
+<% } %> 
+<a href="/books/new"class="nav-link" class="btn btn-success">Add a book</a>
+<%- include('../partials/footer')%>

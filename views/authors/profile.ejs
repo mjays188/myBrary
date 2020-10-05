@@ -1,0 +1,19 @@
+<!-- List all authors, paginated, have a search option -->
+<%- include('../partials/header')%>
+<h1><%= author.name %></h1>
+<h3>Books written: </h3>
+
+    <% if(bookNames.length > 0) { %>
+        <ul>
+        <% for(let i=0;i<bookNames.length; i++ ){ %>
+            <li><a href="/books/<%= bookIDs[i]._id %> "><%= bookNames[i] %></a></li>
+        <% } %>
+    </ul> 
+    <% } else { %>
+        <p>No books yet written by this author!</p>        
+    <% } %>  
+<form action="/authors/<%= author._id%>?_method=DELETE" method="POST">
+    <button class="btn btn-danger">Delete</button>
+</form>
+<a href="/authors/<%= author._id %>/add-book" class="btn btn-primary">Add a book</a>
+<%- include('../partials/footer')%>

@@ -1,0 +1,19 @@
+<!-- Display information - (List of books in that genre) about a genre -->
+<%- include('../partials/header')%>
+<h1><%= genre.name %></h1>
+<h3>Books available having this genre: </h3>
+
+    <% if(bookNames.length > 0) { %>
+        <ul>
+        <% for(let i=0;i<bookNames.length; i++ ){ %>
+            <li><a href="/books/<%= bookIDs[i]._id %> "><%= bookNames[i] %></a></li>
+        <% } %>
+    </ul> 
+    <% } else { %>
+        <p>No books are present in this genre!</p>        
+    <% } %>  
+<form action="/genres/<%= genre._id%>?_method=DELETE" method="POST">
+    <button class="btn btn-danger">Delete</button>
+</form>
+<a href="/genres/<%= genre._id %>/add-book" class="btn btn-primary">Add a book</a>
+<%- include('../partials/footer')%>

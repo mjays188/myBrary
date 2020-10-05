@@ -1,0 +1,14 @@
+<!-- List all authors, paginated, have a search option -->
+<%- include('../partials/header')%>
+<h1>Hello from all authors page</h1>
+<% if(Object.keys(authors).length === 0) {%>
+    <p>No authors in database</p>
+<% } else { %>
+    <ul>
+        <% authors.forEach(author => { %>
+            <li><a href="/authors/<%= author._id %>" ><%= author.name %></a></li> 
+        <% }); %> 
+        </ul>
+<% } %>  
+<a href="/authors/new"class="nav-link" class="btn btn-success">Add an author</a>
+<%- include('../partials/footer')%>

@@ -1,0 +1,20 @@
+
+<%- include('./partials/header')%>
+<div class="container-fluid row">
+    <div class="col-md-4">
+        <h1>Sign In</h1>
+        <form action="/signin" method="POST">
+            <div class="form-group">
+                <label>Email: </label>
+                <input class="form-control" type="email" name="email" placeholder="Enter registered email">
+            </div>
+            <div class="form-group">
+                <label>Password: </label>
+                <input class="form-control" type="password" name="password" placeholder="Password">
+            </div>
+            <button class="btn btn-success" type="submit">Sign In</button>
+        </form>
+    </div>
+</div>
+
+<%- include('./partials/footer')%>

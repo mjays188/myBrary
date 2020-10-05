@@ -1,0 +1,31 @@
+<!-- All the information about a single book, accessible to everyone -->
+<%- include('../partials/header')%>
+<div class="container">
+    <div class="ml-5 mt-3">
+        <h2>Name: <%= book.name %> </h2>
+        <h4>ISBN: <%= book.isbn %> </h4>
+        <h4>Authors: </h4>
+        <ul>
+            <% authorIDs.forEach((authorObj, i) => { %>
+                <li><a href="/authors/<%= authorObj._id %>"><%= authorNames[i]%> </a></li>
+            <% }); %> 
+        </ul>
+        <h4>Genres: </h4>
+        <ul>
+            <% genreIDs.forEach((genreObj, i) => { %>
+                <li><a href="/genres/<%= genreObj._id %>"><%= genreNames[i]%> </a></li>
+            <% }); %> 
+        </ul>
+        <h4>Quantity Available: <%= book.quantity %></h4>
+        <h4>Total Issues: <%= book.totalIssues %></h4>
+    </div>
+    <form action="/books/<%= book._id%>?_method=DELETE" method="POST">
+        <div class="form-group"><button class="btn btn-danger">Delete</button></div>
+        <div class="form-group">
+            <a href="/books/<%= book._id %>/update-qty" class="btn btn-warning">Update Quantity</a>
+        </div>
+    </form>
+    
+</div>
+
+<%- include('../partials/footer')%>

@@ -1,0 +1,15 @@
+<!-- Display a list of all genres - (everyone) -->
+<!-- Display all the genres in a paginated format, along with the search option -->
+<%- include('../partials/header')%>
+<h1>Hello from all Genres page</h1>
+<% if(Object.keys(genres).length === 0) {%>
+    <p>No Genres in database</p>
+<% } else { %>
+    <ul>
+        <% genres.forEach(genre => { %>
+            <li><a href="/genres/<%=  genre._id %>" ><%= genre.name %></a></li> 
+        <% }); %> 
+        </ul>
+<% } %> 
+<a href="/genres/new"class="nav-link" class="btn btn-primary">Add a Genre</a>
+<%- include('../partials/footer')%>
