@@ -38,10 +38,9 @@ router.post("/signup", function(req, res){
 
                 
                 const newReader = new Reader({username: username,isAdmin, name});
-                await Reader.register(newReader, password, (err, ) => {
-
-                });
-                if(typeof(reader)==="object" && Object.keys(reader) > 0){
+                let reader = await Reader.register(newReader, password);
+                console.log(reader)
+                if(typeof(reader)=="object" && Object.keys(reader) > 0){
                     passport.authenticate("local")(req, res, () => {
                         console.log("authenticated successfully");
                         req.flash("success", "Welcome to MyBrary" + reader.name);
