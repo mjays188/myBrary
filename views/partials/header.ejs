@@ -26,22 +26,20 @@
             </li>
           </ul>
           <ul class="navbar-nav ml-auto" style="margin-right: 5%;">
-            <li class="nav-item">
-                <a class="nav-link" href="/signup-reader">Sign Up</a>
-            </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
-              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <a class="dropdown-item" href="/signup-admin">Sign Up as Admin</a>
-              </div>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/signin">Sign In</a>
-            </li>
-            <!-- options after logging user in -->
-            <!-- <ul class="navbar-nav ml-auto" style="margin-right: 5%;">
+            <% if(currentReader){ %> 
               <li class="nav-item">
-                  <a class="nav-link" href="/checkout">Sign Up</a>
+                <a class="nav-link" href="/checkout">Checkout</a>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <a class="dropdown-item" href="/readers/<%= currentReader._id %>">Profile</a>
+                  <a class="dropdown-item" href="/signout">Sign-out</a>
+                </div>
+              </li>
+            <% }else{ %> 
+              <li class="nav-item">
+                  <a class="nav-link" href="/signup-reader">Sign Up</a>
               </li>
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
@@ -50,8 +48,20 @@
                 </div>
               </li>
               <li class="nav-item">
-                  <a class="nav-link" href="/login">Sign In</a>
+                  <a class="nav-link" href="/signin">Sign In</a>
               </li>
-          </ul> -->
+            <% } %> 
         </div>
       </nav>
+      <div class="container">
+        <% if(error && error.length > 0){ %>
+            <div class="alert alert-danger">
+                <%= error %>
+            </div>
+        <% } %>
+        <% if(success && success.length > 0){ %>
+            <div class="alert alert-success">
+                <%= success %>
+            </div>
+        <% } %>
+    </div>

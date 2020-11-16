@@ -31,6 +31,7 @@ router.post("/new", (req, res) => {
             else throw createdGenre;
         } catch (err) {
             //flash an error message +
+            req.flash("error", err.message);
             res.redirect("/genres");
         }
     })();
@@ -53,6 +54,7 @@ router.get("/:id", (req, res) => {
             else throw foundGenre;
         } catch (err) {
             //flash an error message + No such genre found
+            req.flash("error", "No such Genre is found in the store!");
             res.redirect("/genres");
         }
     })();
@@ -82,6 +84,7 @@ router.put("/:id/add-book", (req, res) => {
                 const bookToBeAdded = await Book.findOne({isbn: isbn});
                 if(!bookToBeAdded){
                     //flash - invalid isbn, add this as a new book
+                    req.flash("error", "Book not found, add this to store to continue!");
                     res.redirect("/books/new");
                 }else{
                     if(genreToUpdate.books.includes({_id: bookToBeAdded})){

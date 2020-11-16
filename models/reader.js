@@ -14,8 +14,17 @@ let readerSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    password: {
-        type: String
+    verification_token:{
+        type: String,
+        default: ""
+    },
+    is_verified:{
+        type: Boolean,
+        default: false
+    },
+    forget_password_token:{
+        type: String,
+        default: ""
     }
 });
 

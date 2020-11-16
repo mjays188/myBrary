@@ -32,7 +32,7 @@ router.post("/new", (req, res) => {
                 res.redirect("/authors/" + createdAuthor._id);
             else throw createdAuthor;
         } catch (err) {
-            //flash an error message +
+            req.flash("error", err.message);
             res.redirect("/authors");
         }
     })();
@@ -76,7 +76,7 @@ router.get("/:id/add-book", (req, res) => {
     })();
 });
 
-router.put("/:id/add-book", (req, res) => {s
+router.put("/:id/add-book", (req, res) => {
     (async function(){
         try {
             const authorToUpdate = await Author.findById(req.params.id);
@@ -121,10 +121,10 @@ router.delete("/:id", (req, res) => {
             const authorToDelete = await Author.findById(req.params.id);  
             if(typeof(authorToDelete) === "object"){
                 if(authorToDelete.books.length > 0){
-                    //flash a message - author can't be deleted 
+                    req.flash("error", "Author can't be deleted!");
                     res.redirect("/authors/" + authorToDelete._id);
                 } else {
-                    //flash a message - author deleted successfully 
+                    req.flash("success", "Author deleted successfully!");
                     await Author.remove({_id: authorToDelete._id});
                     res.redirect("/authors");
                 }

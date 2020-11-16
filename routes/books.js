@@ -58,6 +58,7 @@ router.post("/new", (req, res) => {
     }  
     createNewBook().then(createdBook => {
         //flash a success message
+        req.flash("success", "Book added successfully to store");
         //add this books profile link to all it's authors
         (async ()=>{
             const authorIDs = createdBook.authors;
@@ -79,6 +80,7 @@ router.post("/new", (req, res) => {
     }).catch(err => {
         console.log(err);
         //flash an error message - error in validation
+        req.flash("error", err.message);
         res.redirect("/books");
     });
 });

@@ -62,7 +62,7 @@ app.use(flash());
 
 //passport configuration
 app.use(require("express-session")({
-    secret: secrets.HASH_SECRET,
+    secret: secrets.EXPRESS_SESSION_SECRET,
     resave: false,
     saveUninitialized: false
 }));
@@ -74,7 +74,7 @@ passport.serializeUser(Reader.serializeUser());
 passport.deserializeUser(Reader.deserializeUser());
 
 app.use(function(req, res, next){
-    res.locals.currentReader = req.reader;
+    res.locals.currentReader = req.user;
     res.locals.error = req.flash("error");
     res.locals.success = req.flash("success");
     next();
@@ -82,7 +82,7 @@ app.use(function(req, res, next){
 
 //routing
 app.use("/", indexRoutes);
-// app.use("/readers", readers);
+app.use("/readers", readers);
 app.use("/books", books);
 app.use("/authors", authors);
 app.use("/genres", genres);
