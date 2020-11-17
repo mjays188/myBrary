@@ -5,6 +5,9 @@ let authorSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    image:{
+        type: String,
+    },
     books: [{
         id:{
             type: mongoose.Schema.Types.ObjectId,

@@ -1,6 +1,5 @@
 let express = require("express");
 let router = express.Router();
-let passport = require("passport");
 let Reader = require("../models/reader");
 const { isSignedIn } = require("../middleware/index");
 

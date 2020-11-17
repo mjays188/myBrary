@@ -25,6 +25,30 @@ let readerSchema = new mongoose.Schema({
     forget_password_token:{
         type: String,
         default: ""
+    },
+    //account balance
+    acc_balance:{
+        type: Number,
+        default: 1000
+    },
+    //transactions - array of transactions
+    transactions: [{
+        id:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Transaction"
+        }
+    }],
+    //cart - array of books to be rented
+    cart:[{
+        id:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Book"
+        }
+    }],
+    //delivery_address
+    address: {
+        type: String,
+        required: true
     }
 });
 

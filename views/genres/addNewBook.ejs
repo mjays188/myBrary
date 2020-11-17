@@ -1,15 +1,21 @@
 <!-- adding new books, accessible to only admin -->
 <%- include('../partials/header')%>
-<div class="container-fluid row">
-    <div class="col-md-4">
-        <h1></h1>
+<div class="container">
+    <div style="margin-top: 20%; margin-left: 20; margin-right: 20;">
+        <h1 class="display-5 text-center">Add a new book to <%= genre.name %> </h1>
         <form action="/genres/<%= genre._id %>/add-book?_method=PUT" method="POST">
             <div class="form-group">
-                <label>ISBN: </label>
-                <input class="form-control" type="text" name="isbn">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"> ISBN </span>
+                    </div>
+                    <input class="form-control" type="text" name="isbn" required>
+                </div>
             </div>
-            <button class="btn btn-secondary" type="submit">Add this book</button>
-            <button class="btn btn-warning"><a href="/genre/<%= genre._id %>">Go Back</a></button>
+            <div class="d-flex justify-content-around">
+                <button class="btn btn-secondary" type="submit">Add this book</button>
+                <button class="btn btn-warning"><a href="/genre/<%= genre._id %>">Go Back</a></button>
+            </div>
         </form>
     </div>
 </div>

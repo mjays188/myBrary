@@ -1,21 +1,42 @@
 <!-- List all authors, paginated, have a search option -->
 <%- include('../partials/header')%>
-<h1><%= author.name %></h1>
-<h3>Books written: </h3>
-
-    <% if(bookNames.length > 0) { %>
-        <ul>
-        <% for(let i=0;i<bookNames.length; i++ ){ %>
-            <li><a href="/books/<%= bookIDs[i]._id %> "><%= bookNames[i] %></a></li>
-        <% } %>
-    </ul> 
+<div class="container mt-5">
+    <div class="thumbnail">
+        <img src="<%= author.image %>" class="img-fluid">
+        <div class="text-center caption-full">
+            <h2><%= author.name %></h2>
+        </div>
+    </div>
+    <hr>
+    <h3>Books written: </h3>
+    <% if(bookDetails.length > 0) { %>
+        <div class="d-flex justify-content-between mb-3" style="display: flex; flex-wrap: wrap;">
+            <% bookDetails.forEach(book => { %>
+                <div class="col-md-4 col-sm-6">
+                    <div class="card" style="width: 18rem;">
+                        <img class="card-img-top" src="<%= book.image %>" alt="<%= book.name %>">
+                        <div class="card-body">
+                            <h5 class="card-title"><%= book.name %></h5>
+                            <p class="d-flex flex-row-reverse">
+                                <a href="/books/<%= book.id%>">More Info>></a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            <% })%>
+        </div>
     <% } else { %>
         <p>No books yet written by this author!</p>        
     <% } %>  
-<% if(currentReader && currentReader.isAdmin){ %> 
-    <form action="/authors/<%= author._id%>?_method=DELETE" method="POST">
-        <button class="btn btn-danger">Delete</button>
-    </form>
-    <a href="/authors/<%= author._id %>/add-book" class="btn btn-primary">Add a book</a>
-<% } %> 
+    <% if(currentReader && currentReader.isAdmin){ %> 
+        <div class="d-flex">
+            <div class="mr-3"><a href="/authors/<%= author._id %>/add-book" class="btn btn-primary">Add a book</a></div>
+            <div>
+                <form action="/authors/<%= author._id%>?_method=DELETE" method="POST">
+                    <button class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    <% } %> 
+</div>
 <%- include('../partials/footer')%>

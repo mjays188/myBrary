@@ -33,7 +33,7 @@ router.get("/search/:data/:type", (req, res) => {
                     case "book_ISBN":
                         const book = await Book.findOne({isbn: parseInt(data)});
                         if(book){
-                            res.redirect("http://localhost:3000/books/"+book._id);
+                            res.redirect("/books/"+book._id);
                         }else throw new Error();
                         break;
                     case "pushlish_date":
@@ -60,13 +60,13 @@ router.get("/new", isAdmin, (req, res) => {
 // - add the book to the database after validation
 router.post("/new", isAdmin, (req, res) => {
     async function createNewBook() {
-        let {isbn, name, authors, genres, publishDate, quantity} = req.body;
+        let {isbn, name, image, authors, genres, publishDate, quantity} = req.body;
         let authorObjects = new Array();
         for(let i=0; i<authors.length; i++){
-            if(authors[i].length > 0){
-                const foundAuthor = await Author.findOne({name: authors[i]});//, (err, foundAuthor) => {
+            if(authors[i].name.length > 0 && authors[i].image.length > 0){
+                const foundAuthor = await Author.findOne({name: authors[i].name});
                 if(!foundAuthor){
-                    const createdAuthor = await Author.create({name: authors[i]});
+                    const createdAuthor = await Author.create({name: authors[i].name, image: authors[i].image});
                     authorObjects.push(createdAuthor);
                 } else {
                     authorObjects.push(foundAuthor);
@@ -87,7 +87,7 @@ router.post("/new", isAdmin, (req, res) => {
             }
         }
         genres = genreObjects;
-        const newBook = { isbn, name, authors, genres, publishDate, quantity };
+        const newBook = { isbn, name, image, authors, genres, publishDate, quantity };
         let createdBook = await Book.create(newBook);
         return createdBook;
     }  
@@ -126,17 +126,17 @@ router.get("/:id", (req, res) => {
         try {
             const foundBook = await Book.findById(req.params.id);  
             if(typeof(foundBook) === "object"){
-                let authorNames = new Array();
+                let authorDetails = new Array();
                 const authorIDs = foundBook.authors;
                 for(let i=0; i<authorIDs.length; i++) {
                     const foundAuthor = await Author.findById(authorIDs[i]._id);
-                    authorNames.push(foundAuthor.name);
+                    authorDetails.push({image: foundAuthor.image, name: foundAuthor.name, id: foundAuthor._id});
                 }
-                let genreNames = new Array();
+                let genreDetails = new Array();
                 const genreIDs = foundBook.genres;
                 for(let i=0; i<genreIDs.length; i++) {
                     const foundGenre = await Genre.findById(genreIDs[i]._id);
-                    genreNames.push(foundGenre.name);
+                    genreDetails.push({name: foundGenre.name, id: foundGenre._id});
                 }
                 const commentIDs = foundBook.comments;
                 let comments = new Array();
@@ -144,7 +144,7 @@ router.get("/:id", (req, res) => {
                     const foundComment = await Comment.findById(commentIDs[i]._id);
                     comments.push(foundComment);
                 }
-                res.render("books/profile", {book: foundBook, authorIDs, authorNames, genreIDs, genreNames, comments});
+                res.render("books/profile", {book: foundBook, authorDetails, genreDetails, comments});
             }
             else throw foundBook;
         } catch (err) {
@@ -156,36 +156,35 @@ router.get("/:id", (req, res) => {
 });
 
 //Update the quantity of each book available - (admin)
-router.get("/:id/update-qty", isAdmin, (req, res) => {
+router.get("/:id/update", isAdmin, (req, res) => {
     (async function(){
         try {
             const bookToUpdate = await Book.findById(req.params.id);
             if(typeof(bookToUpdate) === "object"){
-                res.render("books/updateQuantity", {book: bookToUpdate});
-            } else throw bookToUpdate;
+                res.render("books/update", {book: bookToUpdate});
+            } else throw new Error("Book with such an id doesn't exist");
         } catch (err) {
-            console.log(err);
-            //flash-message - no such book found
+            req.flash("error", err.message);
             res.redirect("/books");
         }
     })();
 });
 
-router.put("/:id/update-qty", isAdmin, (req, res) => {
+router.put("/:id/update", isAdmin, (req, res) => {
     (async function(){
         try {
             const bookToUpdate = await Book.findById(req.params.id);
             if(typeof(bookToUpdate) === "object"){
-                let newQty = req.body.quantity;
-                if(newQty>=0 && newQty<=100){
-                    const updatedBook = await Book.findByIdAndUpdate(bookToUpdate._id, {quantity: newQty});
-                    //flash - message - quantity update successfully
+                const { quantity, image } = req.body;
+
+                if(quantity>=0 && quantity<=100 && image.length > 0){
+                    const updatedBook = await Book.findByIdAndUpdate(bookToUpdate._id, {quantity, image});
+                    req.flash("Success", "Book updated Successfully");
                     res.redirect("/books/" + updatedBook._id);
                 }
-            } else throw bookToUpdate;
+            } else throw new Error("Book with such an id doesn't exist");
         } catch (err) {
-            console.log(err);
-            //flash-message - no such book found
+            req.flash("error", err.message);
             res.redirect("/books");
         }
     })();

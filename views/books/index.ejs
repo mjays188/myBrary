@@ -1,16 +1,37 @@
 <!-- Display all the books in a paginated format, along with the search option -->
 <%- include('../partials/header')%>
-<h1>Hello from all books page</h1>
-<% if(Object.keys(books).length === 0) {%>
-    <p>No books in database</p>
-<% } else { %>
-    <ul>
-        <% books.forEach(book => { %>
-            <li><a href="/books/<%=  book._id %>" ><%= book.name %></a></li> 
-        <% }); %> 
-        </ul>
-<% } %> 
-<% if(currentReader && currentReader.isAdmin){ %> 
-    <a href="/books/new"class="nav-link" class="btn btn-success">Add a book</a>
-<% } %> 
+<div class="container mt-4">
+    <% if(Object.keys(books).length === 0) {%>
+        <div class="jumbotron">
+            <h1 class="display-4">Oops!</h1>
+            <p class="lead">The book(s) you requested are not in database</p>
+            <hr class="my-4">
+            <p>Want to explore all books?</p>
+            <p class="lead">
+              <a class="btn btn-primary btn-lg" href="/books" role="button">Books</a>
+            </p>
+        </div>
+    <% } else { %>
+        <h1 class="mt-3 mb-3 text-center">Available Books</h1>
+        <div class="d-flex justify-content-between" style="display: flex; flex-wrap: wrap;">
+            <% books.forEach(function(book){ %>
+                <div class="col-md-4 col-sm-6">
+                    <div class="card" style="width: 18rem; margin: 5px;">
+                        <img class="card-img-top" src="<%= book.image %>" alt="<%= book.name %>">
+                        <div class="card-body">
+                            <h5 class="card-title text-center"><%= book.name %></h5>
+                            <p class="d-flex flex-row-reverse">
+                                <a href="/books/<%= book._id%>">More Info>></a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            <% })%>
+        </div>
+    <% } %>  
+    <hr class="my-4">
+    <% if(currentReader && currentReader.isAdmin){ %> 
+        <a href="/books/new" class="btn btn-success">Add a book</a>
+    <% } %> 
+</div>
 <%- include('../partials/footer')%>

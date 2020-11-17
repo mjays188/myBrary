@@ -82,6 +82,9 @@ let bookSchema = new mongoose.Schema({
             message: "Maximum allowed quantity is 100"
         }]
     },
+    image:{
+        type: String,
+    },
     totalIssues: {
         type: Number,
         default: 0

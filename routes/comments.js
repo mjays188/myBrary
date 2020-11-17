@@ -69,14 +69,14 @@ router.get("/:comment_id/edit", middleware.checkCommentOwnership, (req, res) => 
 router.put("/:comment_id", middleware.checkCommentOwnership, (req, res) => {
     (async ()=>{
         try {
-            const updatedComment = await Comment.findByIdAndUpdate(req.body.comment);
+            const updatedComment = await Comment.findByIdAndUpdate(req.params.comment_id,{text: req.body.updatedText});
             if(typeof(updatedComment)==="object" && Object.keys(updatedComment)!==0){
                 req.flash("success", "Comment edit successful");
                 res.redirect("/books/", req.params.id);
-            }else throw updatedComment;
+            }else throw new Error("Couldn't update comment, something went wrong");
         } catch (err) {
             req.flash("error", err.message);
-            res.redirect("back");
+            res.redirect("/books/" + req.params.id);
         }
     })();
 });

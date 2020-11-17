@@ -1,10 +1,36 @@
-let express = require("express");
-let router = express.Router();
-let passport = require("passport");
-let Transaction = require("../models/transaction");
+let mongoose = require("mongoose");
 
-//display profile page of a reader 
+let transactionSchema = new mongoose.Schema({
+    reader:  {
+        id:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Reader"
+        }
+    },
+    //initially the amount will be qty*500 and after the book is returned the required amount will be kept remaining will be returned 
+    amount:{
+        type: Number,
+        required: true
+    },
+    status: {
+        type: String,
+        default: "Borrowed"
+    },
+    books: [{
+        id:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Book"
+        },
+        book_name: String
+    }],
+    requested_weeks:[{
+        type: Number
+    }],
+    borrow_date:{
+        type: Date,
+        required: true,
+        default: Date.now()
+    }
+});
 
-//Delete a reader
-
-module.exports = router;
+module.exports = mongoose.model("Transaction", transactionSchema);

@@ -1,6 +1,5 @@
 let express = require("express");
 let router = express.Router();
-let passport = require("passport");
 let Author = require("../models/author");
 let Book = require("../models/book");
 
@@ -41,10 +40,11 @@ router.post("/new", isAdmin, (req, res) => {
     (async function(){
         try {
             let newAuthor = {
-                name: req.body.name
+                name: req.body.name,
+                image: req.body.image
             };
-            if(newAuthor.name.length > 0){
-                const existingAuthor = await Author.findOne({name: newAuthor.name});
+            if(newAuthor.name.length > 0 && newAuthor.image.length > 0){
+                const existingAuthor = await Author.findOne({name: newAuthor.name, image: newAuthor.image});
                 if(!existingAuthor){
                     const createdAuthor = await Author.create(newAuthor);  
                     if(!(Object.keys(createdAuthor).length === 0 && createdAuthor.constructor === Object)){
@@ -68,13 +68,13 @@ router.get("/:id", (req, res) => {
         try {
             const foundAuthor = await Author.findById(req.params.id);
             if(typeof(foundAuthor) === "object"){
-                let bookNames = new Array();
+                let bookDetails = new Array();
                 const bookIDs = foundAuthor.books;
                 for(let i=0; i<bookIDs.length; i++) {
                     const foundBook = await Book.findById(bookIDs[i]["_id"]);
-                    bookNames.push(foundBook.name);
+                    bookDetails.push({id: foundBook._id, name: foundBook.name, image: foundBook.image});
                 }
-                res.render("authors/profile", {author: foundAuthor, bookIDs, bookNames});
+                res.render("authors/profile", {author: foundAuthor, bookDetails});
             }
             else throw foundAuthor;
         } catch (err) {
@@ -108,6 +108,7 @@ router.put("/:id/add-book", isAdmin, (req, res) => {
                 const bookToBeAdded = await Book.findOne({isbn: isbn});
                 if(!bookToBeAdded){
                     //flash - invalid isbn, add this as a new book
+                    req.flash("error", "Book with given ISBN not found, Add this as a new book. ");
                     res.redirect("/books/new");
                 }else{
                     if(authorToUpdate.books.includes({_id: bookToBeAdded})){

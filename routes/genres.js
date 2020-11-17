@@ -1,6 +1,5 @@
 let express = require("express");
 let router = express.Router();
-let passport = require("passport");
 let Genre = require("../models/genre");
 let Book = require("../models/book");
 
@@ -12,7 +11,11 @@ router.get("/", (req, res) => {
         return await Genre.find({});
     }
     getAllGenres().then(genres => {
-        res.render("genres/index", {genres});
+        let bookCount = new Array();
+        genres.forEach(genre => {
+            bookCount.push(genre.books.length);
+        });
+        res.render("genres/index", {genres, bookCount});
     }).catch(err => console.log(err));
 });
 
@@ -59,13 +62,13 @@ router.get("/:id", (req, res) => {
         try {
             const foundGenre = await Genre.findById(req.params.id);
             if(typeof(foundGenre) === "object"){
-                let bookNames = new Array();
+                let bookDetails = new Array();
                 const bookIDs = foundGenre.books;
                 for(let i=0; i<bookIDs.length; i++) {
                     const foundBook = await Book.findById(bookIDs[i]["_id"]);
-                    bookNames.push(foundBook.name);
+                    bookDetails.push({id: foundBook._id, name: foundBook.name, image: foundBook.image});
                 }
-                res.render("genres/profile", {genre: foundGenre, bookIDs, bookNames});
+                res.render("genres/profile", {genre: foundGenre, bookDetails});
             }
             else throw foundGenre;
         } catch (err) {
@@ -98,12 +101,11 @@ router.put("/:id/add-book", isAdmin, (req, res) => {
                 const isbn = req.body.isbn;
                 const bookToBeAdded = await Book.findOne({isbn: isbn});
                 if(!bookToBeAdded){
-                    //flash - invalid isbn, add this as a new book
                     req.flash("error", "Book not found, add this to store to continue!");
                     res.redirect("/books/new");
                 }else{
                     if(genreToUpdate.books.includes({_id: bookToBeAdded})){
-                        //flash-error - this book is already present in this genre
+                        req.flash("error", "This book is already present in this genre!");
                         res.redirect("/genres/" + genreToUpdate._id);
                     }else{
                         const updatedGenre = await Genre.findByIdAndUpdate(
@@ -113,15 +115,14 @@ router.put("/:id/add-book", isAdmin, (req, res) => {
                         if(typeof(updatedGenre) === "object"){
                             const updatedBook = await Book.updateOne(
                                 {_id: bookToBeAdded._id}, 
-                                { $push: { authors: {_id: updatedGenre}}}
+                                { $push: { genres: {_id: updatedGenre}}}
                             );
-                            res.redirect("/authors/" + updatedGenre._id);
+                            res.redirect("/genres/" + updatedGenre._id);
                         } else throw updatedGenre;
                     }
                 }
             } else throw genreToUpdate;
         } catch (err) {
-            console.log(err);
             req.flash("error", err.message);
             res.redirect("/authors");
         }
