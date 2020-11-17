@@ -4,6 +4,8 @@ let passport = require("passport");
 let Book = require("../models/book");
 let Author = require("../models/author");
 let Genre = require("../models/genre");
+let Comment = require("../models/comment");
+let {isAdmin} = require("../middleware");
 
 //Display all Books - (everyone)
 router.get("/", (req, res) => {
@@ -15,15 +17,48 @@ router.get("/", (req, res) => {
     }).catch(err => console.log(err));
 });
 
+//search results
+router.get("/search/:data/:type", (req, res) => {
+    (async ()=>{
+        try {
+            const { data, type } = req.params;
+            if(data && type){
+                switch(type){
+                    case "book_name":
+                        const books = await Book.find({name: new RegExp(req.params.data, "i")});
+                        if(books){
+                            res.render("books/index", {books});
+                        }else throw new Error();
+                        break;
+                    case "book_ISBN":
+                        const book = await Book.findOne({isbn: parseInt(data)});
+                        if(book){
+                            res.redirect("http://localhost:3000/books/"+book._id);
+                        }else throw new Error();
+                        break;
+                    case "pushlish_date":
+                        const booksPushlished = await Book.find({publishDate: { $gte: Date.parse(data)}});
+                        if(booksPushlished){
+                            res.render("books/index", {books: booksPushlished});
+                        }else throw new Error();
+                        break;
+                }
+            }
+        } catch (err) {
+            req.flash("error", "Oops! No books found in the store");
+            res.redirect("/authors");
+        }
+    })();
+});
 
 //Add a new book - (admin)
 // - get the form for adding a new book
-router.get("/new", (req, res) => {
+router.get("/new", isAdmin, (req, res) => {
     res.render("books/new");
 });
 
 // - add the book to the database after validation
-router.post("/new", (req, res) => {
+router.post("/new", isAdmin, (req, res) => {
     async function createNewBook() {
         let {isbn, name, authors, genres, publishDate, quantity} = req.body;
         let authorObjects = new Array();
@@ -103,7 +138,13 @@ router.get("/:id", (req, res) => {
                     const foundGenre = await Genre.findById(genreIDs[i]._id);
                     genreNames.push(foundGenre.name);
                 }
-                res.render("books/profile", {book: foundBook, authorIDs, authorNames, genreIDs, genreNames});
+                const commentIDs = foundBook.comments;
+                let comments = new Array();
+                for(let i=0; i<commentIDs.length; i++) {
+                    const foundComment = await Comment.findById(commentIDs[i]._id);
+                    comments.push(foundComment);
+                }
+                res.render("books/profile", {book: foundBook, authorIDs, authorNames, genreIDs, genreNames, comments});
             }
             else throw foundBook;
         } catch (err) {
@@ -115,7 +156,7 @@ router.get("/:id", (req, res) => {
 });
 
 //Update the quantity of each book available - (admin)
-router.get("/:id/update-qty", (req, res) => {
+router.get("/:id/update-qty", isAdmin, (req, res) => {
     (async function(){
         try {
             const bookToUpdate = await Book.findById(req.params.id);
@@ -130,7 +171,7 @@ router.get("/:id/update-qty", (req, res) => {
     })();
 });
 
-router.put("/:id/update-qty", (req, res) => {
+router.put("/:id/update-qty", isAdmin, (req, res) => {
     (async function(){
         try {
             const bookToUpdate = await Book.findById(req.params.id);
@@ -151,7 +192,7 @@ router.put("/:id/update-qty", (req, res) => {
 });
 
 //Delete a book - (admin)
-router.delete("/:id", (req, res) => {
+router.delete("/:id", isAdmin, (req, res) => {
     (async function(){
         try {
             const bookToDelete = await Book.findById(req.params.id);
@@ -166,9 +207,13 @@ router.delete("/:id", (req, res) => {
                     const foundGenre = await Genre.findById(genreIDs[i]._id);
                     await Genre.updateOne({_id: foundGenre._id}, {$pullAll: {books: [bookToDelete]}});
                 }
+                const commentIDs = bookToDelete.comments;
+                for(let i=0; i<commentIDs.length; i++) {
+                    await Comment.findByIdAndRemove(commentIDs[i]._id);
+                }
                 const deletedBook = await Book.remove({_id:bookToDelete._id}); 
                 if(typeof(deletedBook) === "object"){
-                    //flash message - book deleted successfully
+                    req.flash("success", "Book deleted Successfully");
                     res.redirect("/books");
                 } else throw deletedBook;
             }

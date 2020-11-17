@@ -1,4 +1,7 @@
 const jwt = require("jsonwebtoken");
+const Comment = require("../models/comment");
+const Book = require("../models/book");
+
 let middlewareObj = {
     isSignedOut: function(req, res, next){
                     if(!req.isAuthenticated()){
@@ -49,7 +52,26 @@ let middlewareObj = {
                 res.redirect("/books");
             }
         })();
-    }
+    },
+
+    checkCommentOwnership:
+        function (req, res, next){
+            (async ()=>{
+                try {
+                    const comment = await Comment.findById(req.params.comment_id);
+                    if(typeof(comment)==="object" && Object.keys(comment)!==0){
+                        if(comment.author.id.equals(req.user._id)){
+                            next();
+                        }else{
+                            throw new Error("You don't have permission to do this");
+                        }
+                    }else throw comment;
+                } catch (err) {
+                    req.flash("error", err.message);
+                    res.redirect("back");
+                }
+            })();
+        }    
 }
 
 module.exports = middlewareObj;

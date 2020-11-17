@@ -1,3 +1,21 @@
 <!-- All the information about a single book, accessible to everyone -->
 <%- include('./partials/header')%>
+<div class="container" style="margin: 10%, 10%; margin-top: 15%;">
+    <form action="/search" method="POST">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <select class="custom-select" name="query[parameter]" id="search-parameter">
+                    <option selected value="author_name">Author Name</option>
+                    <option value="genre_name">Genre</option>
+                    <option value="book_name">Book Name</option>
+                    <option value="book_ISBN">Book ISBN</option>
+                    <option value="pushlish_date">Publish Date</option>
+                </select>
+            </div>
+            <input type="text" id="search-input" class="form-control" name="query[data]" required>
+          </div>
+        <button class="btn btn-outline-success" type="submit">Search</button>
+    </form>
+</div>
+<script src="/js/alterInputType.js"></script>
 <%- include('./partials/footer')%>

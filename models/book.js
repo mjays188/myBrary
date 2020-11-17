@@ -57,6 +57,12 @@ let bookSchema = new mongoose.Schema({
         },
         genre_name: String
     }],
+    comments:[{
+        id:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref:"Comment"
+        }
+    }],
     publishDate: {
         type: Date,
         required: true
@@ -79,7 +85,8 @@ let bookSchema = new mongoose.Schema({
     totalIssues: {
         type: Number,
         default: 0
-    }
+    },
+    
 });
 
 const Book = module.exports = mongoose.model("Book", bookSchema);

@@ -4,6 +4,8 @@ let passport = require("passport");
 let Genre = require("../models/genre");
 let Book = require("../models/book");
 
+let {isAdmin} = require("../middleware");
+
 //Display a genres - (everyone)
 router.get("/", (req, res) => {
     async function getAllGenres() {
@@ -14,12 +16,27 @@ router.get("/", (req, res) => {
     }).catch(err => console.log(err));
 });
 
+//search results
+router.get("/search/:data", (req, res) => {
+    (async ()=>{
+        try {
+            const genres = await Genre.find({name: new RegExp(req.params.data, "i")});
+            if(genres){
+                res.render("genres/index", {genres});
+            }else throw new Error(`No ${req.params.data} books found in the store`);
+        } catch (err) {
+            req.flash("error", err.message);
+            res.redirect("/genres");
+        }
+    })();
+});
+
 //Add a new genre - (admin)
-router.get("/new", (req, res) => {
+router.get("/new", isAdmin, (req, res) => {
     res.render("genres/new");
 });
 //add the author
-router.post("/new", (req, res) => {
+router.post("/new", isAdmin, (req, res) => {
     (async function(){
         try {
             let newGenre = {
@@ -30,8 +47,7 @@ router.post("/new", (req, res) => {
                 res.redirect("/genres/" + createdGenre._id);
             else throw createdGenre;
         } catch (err) {
-            //flash an error message +
-            req.flash("error", err.message);
+            req.flash("error", "Genre already exists");
             res.redirect("/genres");
         }
     })();
@@ -53,14 +69,13 @@ router.get("/:id", (req, res) => {
             }
             else throw foundGenre;
         } catch (err) {
-            //flash an error message + No such genre found
             req.flash("error", "No such Genre is found in the store!");
             res.redirect("/genres");
         }
     })();
 });
 //Add a new book to an existing genre - (admin)
-router.get("/:id/add-book", (req, res) => {
+router.get("/:id/add-book", isAdmin, (req, res) => {
     (async function(){
         try {
             const genreToUpdate = await Genre.findById(req.params.id);
@@ -75,7 +90,7 @@ router.get("/:id/add-book", (req, res) => {
     })();
 });
 
-router.put("/:id/add-book", (req, res) => {
+router.put("/:id/add-book", isAdmin, (req, res) => {
     (async function(){
         try {
             const genreToUpdate = await Genre.findById(req.params.id);
@@ -107,15 +122,14 @@ router.put("/:id/add-book", (req, res) => {
             } else throw genreToUpdate;
         } catch (err) {
             console.log(err);
-            //flash-message - no such book found
+            req.flash("error", err.message);
             res.redirect("/authors");
         }
     })();
 });
-//Delete a particular book from a genre - (admin)
 
 //Delete a genre
-router.delete("/:id", (req, res) => {
+router.delete("/:id", isAdmin, (req, res) => {
     //an genre can be deleted only if it has no book
     (async function(){
         try {

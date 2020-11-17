@@ -12,8 +12,10 @@
     <% } else { %>
         <p>No books are present in this genre!</p>        
     <% } %>  
-<form action="/genres/<%= genre._id%>?_method=DELETE" method="POST">
-    <button class="btn btn-danger">Delete</button>
-</form>
-<a href="/genres/<%= genre._id %>/add-book" class="btn btn-primary">Add a book</a>
+<% if(currentReader && currentReader.isAdmin){ %> 
+    <form action="/genres/<%= genre._id%>?_method=DELETE" method="POST">
+        <button class="btn btn-danger">Delete</button>
+    </form>
+    <a href="/genres/<%= genre._id %>/add-book" class="btn btn-primary">Add a book</a>
+<% } %> 
 <%- include('../partials/footer')%>

@@ -10,5 +10,7 @@
         <% }); %> 
         </ul>
 <% } %>  
-<a href="/authors/new"class="nav-link" class="btn btn-success">Add an author</a>
+<% if(currentReader && currentReader.isAdmin){ %> 
+    <a href="/authors/new"class="nav-link" class="btn btn-success">Add an author</a>
+<% } %> 
 <%- include('../partials/footer')%>

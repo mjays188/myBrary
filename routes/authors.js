@@ -4,6 +4,8 @@ let passport = require("passport");
 let Author = require("../models/author");
 let Book = require("../models/book");
 
+let {isAdmin} = require("../middleware");
+
 //Display all authors - (everyone)
 router.get("/", (req, res) => {
     async function getAllAuthors() {
@@ -14,26 +16,48 @@ router.get("/", (req, res) => {
     }).catch(err => console.log(err));
 });
 
+//search results
+router.get("/search/:data", (req, res) => {
+    (async ()=>{
+        try {
+            const authors = await Author.find({name: new RegExp(req.params.data, "i")});
+            if(authors){
+                res.render("authors/index", {authors});
+            }else throw new Error();
+        } catch (err) {
+            req.flash("error", "No such author found in the store");
+            res.redirect("/authors");
+        }
+    })();
+});
 
 //Add a new author - (admin)
 //Get the form
-router.get("/new", (req, res) => {
+router.get("/new", isAdmin, (req, res) => {
     res.render("authors/new");
 });
 //add the author
-router.post("/new", (req, res) => {
+router.post("/new", isAdmin, (req, res) => {
     (async function(){
         try {
             let newAuthor = {
                 name: req.body.name
-            }
-            const createdAuthor = await Author.create(newAuthor);  
-            if(!(Object.keys(createdAuthor).length === 0 && createdAuthor.constructor === Object))
-                res.redirect("/authors/" + createdAuthor._id);
-            else throw createdAuthor;
+            };
+            if(newAuthor.name.length > 0){
+                const existingAuthor = await Author.findOne({name: newAuthor.name});
+                if(!existingAuthor){
+                    const createdAuthor = await Author.create(newAuthor);  
+                    if(!(Object.keys(createdAuthor).length === 0 && createdAuthor.constructor === Object)){
+                        req.flash("success", "Author added successfully");
+                        res.redirect("/authors/" + createdAuthor._id);
+                    }
+                    else throw createdAuthor;
+                }else throw new Error("Author already exists!");
+            }else throw new Error("Name can't be empty");
+            
         } catch (err) {
             req.flash("error", err.message);
-            res.redirect("/authors");
+            res.redirect("/authors/new");
         }
     })();
 });
@@ -54,14 +78,14 @@ router.get("/:id", (req, res) => {
             }
             else throw foundAuthor;
         } catch (err) {
-            //flash an error message + No such author found
+            req.flash("error", err.message);
             res.redirect("/authors");
         }
     })();
 });
 
 //Add a new book by an author - (admin)
-router.get("/:id/add-book", (req, res) => {
+router.get("/:id/add-book", isAdmin, (req, res) => {
     (async function(){
         try {
             const authorToUpdate = await Author.findById(req.params.id);
@@ -69,14 +93,13 @@ router.get("/:id/add-book", (req, res) => {
                 res.render("authors/addNewBook", {author: authorToUpdate});
             } else throw authorToUpdate;
         } catch (err) {
-            console.log(err);
-            //flash-message - no such book found
+            req.flash("error", "No such author exists");
             res.redirect("/authors");
         }
     })();
 });
 
-router.put("/:id/add-book", (req, res) => {
+router.put("/:id/add-book", isAdmin, (req, res) => {
     (async function(){
         try {
             const authorToUpdate = await Author.findById(req.params.id);
@@ -114,7 +137,7 @@ router.put("/:id/add-book", (req, res) => {
 });
 
 //Delete an author - (admin)
-router.delete("/:id", (req, res) => {
+router.delete("/:id", isAdmin, (req, res) => {
     //an author can be deleted only if it has written no book
     (async function(){
         try {

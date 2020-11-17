@@ -21,6 +21,7 @@ const indexRoutes = require("./routes/index");
 const readers = require("./routes/readers");
 const authors = require("./routes/authors");
 const books = require("./routes/books");
+const comments = require("./routes/comments");
 const genres = require("./routes/genres");
 const transactions = require("./routes/transactions");
 
@@ -84,6 +85,7 @@ app.use(function(req, res, next){
 app.use("/", indexRoutes);
 app.use("/readers", readers);
 app.use("/books", books);
+app.use("/books/:id/comments", comments);
 app.use("/authors", authors);
 app.use("/genres", genres);
 // app.use("/transactions", transactions);

@@ -250,6 +250,33 @@ router.post("/set-password/:token", (req, res) => {
     })();
 });
 
+router.post("/search", (req, res) => {
+    (async ()=>{
+        try {
+            const query = req.body.query;
+            if(query.data){
+                switch(query.parameter){
+                    case "author_name": 
+                        res.redirect("/authors/search/" + query.data);
+                        break;
+                    case "genre_name":
+                        res.redirect("/genres/search/" + query.data);
+                        break;
+                    case "book_name":
+                    case "book_ISBN":
+                    case "pushlish_date":
+                        res.redirect("/books/search/" + query.data + "/" + query.parameter);
+                        break;
+                    default: throw new Error("Invalid Query");
+                }
+            }else throw new Error("Empty search data!");
+        } catch (err) {
+            req.flash("err", err.message);
+            res.redirect("back");
+        }
+    })();
+});
+
 //logout
 router.get('/signout', isSignedIn, (req, res) => {
     req.logout();

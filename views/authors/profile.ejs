@@ -12,8 +12,10 @@
     <% } else { %>
         <p>No books yet written by this author!</p>        
     <% } %>  
-<form action="/authors/<%= author._id%>?_method=DELETE" method="POST">
-    <button class="btn btn-danger">Delete</button>
-</form>
-<a href="/authors/<%= author._id %>/add-book" class="btn btn-primary">Add a book</a>
+<% if(currentReader && currentReader.isAdmin){ %> 
+    <form action="/authors/<%= author._id%>?_method=DELETE" method="POST">
+        <button class="btn btn-danger">Delete</button>
+    </form>
+    <a href="/authors/<%= author._id %>/add-book" class="btn btn-primary">Add a book</a>
+<% } %> 
 <%- include('../partials/footer')%>

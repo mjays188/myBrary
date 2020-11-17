@@ -11,5 +11,7 @@
         <% }); %> 
         </ul>
 <% } %> 
-<a href="/genres/new"class="nav-link" class="btn btn-primary">Add a Genre</a>
+<% if(currentReader && currentReader.isAdmin){ %> 
+    <a href="/genres/new"class="nav-link" class="btn btn-primary">Add a Genre</a>
+<% } %> 
 <%- include('../partials/footer')%>
