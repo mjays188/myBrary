@@ -46,6 +46,8 @@ const addInput = (parent, e) => {
         break;
         case genreList:
             let newInputElement = document.createElement("input");
+            newInputElement.classList.add("form-control");
+            newInputElement.setAttribute("type", "text");
             newInputElement.setAttribute("name", `genres[${parent.childElementCount-2}]`);
             newInputElement.setAttribute("placeholder", "Enter Genre");
             parent.insertBefore(newInputElement, e.target.parentNode);

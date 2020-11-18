@@ -27,15 +27,18 @@
                 <% transactions.forEach((transaction, i) => { %>
                     <li class="list-group-item">
                         <% if(transaction.status == "Borrowed"){ %> 
-                            <span class="badge badge-primary badge-pill mr-3"><%= transaction.status %></span>
-                            <span class="badge badge-primary mr-3"><%= transaction.borrow_date.toUTCString() %></span>
-
-                            <form action="/readers/<%= transaction.book.id %>/return" method="POST" class="text-center"></form>
-                                <button class="btn btn-success">Return</button>
-                            </form>
+                            <div class="d-flex justify-content-start">
+                                <h3><span class="badge badge-warning badge-pill mr-3"><%= transaction.status %></span></h3>
+                                <h3><span class="badge badge-primary mr-3"><%= transaction.borrow_date.toUTCString() %></span></h3>
+                                <form action="/readers/<%= transaction.book.id %>/return" method="POST">
+                                    <button class="btn btn-success">Return</button>
+                                </form>
+                            </div>
                         <% }else{ %> 
-                            <span class="badge badge-primary badge-pill mr-3"><%= transaction.status %></span>
-                            <span class="badge badge-primary mr-3">Amount Paid: <%= transaction.revenue %></span>
+                            <div class="d-flex justify-content-start">
+                                <h3><span class="badge badge-success badge-pill mr-3"><%= transaction.status %></span></h3>
+                                <h3><span class="badge badge-primary mr-3">Amount Paid: <%= transaction.revenue %></span></h3>
+                            </div>
                         <% } %> 
                     </li>
                 <% }); %> 

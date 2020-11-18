@@ -1,9 +1,31 @@
 let express = require("express");
 let router = express.Router();
+let sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
 let Reader = require("../models/reader");
 let Book = require("../models/book");
 let Transaction = require("../models/transaction");
 const { isSignedIn, isNotAdmin, isVerified } = require("../middleware/index");
+
+//sendConfirmationalMail
+const sendConfirmationalMail = (username, subject, req, res, message, successMsg) => {
+	const msg = {
+		to: username, // Change to your recipient
+		from: 'myBrary@support.com', // Change to your verified sender
+		subject: subject,
+		html: message,
+	};
+	sgMail
+		.send(msg)
+		.then(() => {
+            req.flash("success", successMsg);
+            res.redirect("/books");
+		})
+		.catch((err) => {
+			throw err;
+		});
+};
 
 //display profile page of a reader 
 router.get("/:id", isSignedIn, (req, res) => {
@@ -16,7 +38,6 @@ router.get("/:id", isSignedIn, (req, res) => {
                     const t = await Transaction.findById(reader.transactions[i]._id);
                     transactions.push(t);
                 }
-                console.log(transactions);
                 res.render("readers/profile", { transactions });
             }else{
                 throw new Error("You are not permitted to do that");
@@ -132,15 +153,17 @@ router.post("/:id/return", isNotAdmin, isVerified, (req, res) => {
                 let transactionToUpdate;
                 for(let i=0;i<allTransactions.length;i++){
                     const t = await Transaction.findById(allTransactions[i]._id);
-                    if(t.book.id.equals(book._id)){
+                    if(t.book.id.equals(book._id) && t.status == "Borrowed"){
                         transactionToUpdate = t;
                         revenue -= t.borrow_date.getUTCMinutes();
                         break;
                     }
                 }
-
                 if(revenue > 60)
                     revenue = 500;
+                await Book.findByIdAndUpdate(book._id, {
+                    $inc: {quantity: 1}
+                });
                 //revenue generated
                 //add money to admin
                 const admin = await Reader.findOne({isAdmin: true});
@@ -151,11 +174,12 @@ router.post("/:id/return", isNotAdmin, isVerified, (req, res) => {
                 reader.current_issues -= 1;
                 await reader.save();
                 await Transaction.findByIdAndUpdate(transactionToUpdate._id, {
-                    $set: {status: "Returned"},
+                    status: "Returned",
                     $set: { revenue: revenue}
                 });
-                req.flash("success", "Book Successfully Returned ");
-                res.redirect("/books");
+                //confirmation billing email sent
+                const msg = `${book.name} successfully retured, bill amount: Rs${revenue}`;
+                sendConfirmationalMail(reader.username, "Book Return Confirmation",req, res, msg , "Book Successfully Returned ");
             }else throw new Error("You are not permitted to do that");
         } catch (err) {
             req.flash("error", err.message);
@@ -171,20 +195,27 @@ router.post("/:id/checkout", isNotAdmin, (req, res)=>{
             const reader = req.user;
             const { duration } = req.body;
             const reader_transacted = await Reader.findById(req.params.id);
-            
+            let msg = "Order Successfully placed, book details: \n";
             if(reader_transacted && reader_transacted._id.equals(reader._id)){
                 if(reader.acc_balance >= duration.length * 500 && reader.current_issues + duration.length <= 6){
                     let transaction, allTransactions = new Array();
                     for(let i=0;i<duration.length;i++){
                         duration[i] = parseInt(duration[i]) * 7;
                         //make a transaction with status pending
+                        const bookToRemove = await Book.findById(reader.cart[i]._id);
+                        if(bookToRemove.quantity < 0)
+                            throw new Error(bookToRemove.name + " Unavailable right now.");
                         const t = await Transaction.create({
                             reader: {id: reader_transacted}, 
                             book: {id: reader.cart[i]},
                             duration: duration[i]
                         });
                         allTransactions.push(t);
-                        const bookToRemove = await Book.findById(reader.cart[i]._id);
+
+                        await Book.findByIdAndUpdate(bookToRemove._id, {
+                            $inc: {quantity: -1, totalIssues: 1}
+                        });
+                        msg = msg + bookToRemove.name + " " + duration[i] + " days.\n";
                         const newBal = reader.acc_balance - 500
                         await Reader.findByIdAndUpdate(reader._id,
                             {
@@ -196,8 +227,8 @@ router.post("/:id/checkout", isNotAdmin, (req, res)=>{
                         );
                     }
                     //send a order confirmation mail
-                    req.flash("success", "Order Successful, details have been sent to your mail");
-                    res.redirect("/books");
+                    
+                    sendConfirmationalMail(reader.username, "Order Confirmation", req, res, msg, "Order Successful, details have been sent to your mail");
                 }else throw new Error("Insufficient account balance or issue limit reached!");
             }else throw new Error("You aren't permitted to do this");
         } catch (err) {

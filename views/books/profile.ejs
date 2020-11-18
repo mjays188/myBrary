@@ -14,7 +14,7 @@
                 <% if(currentReader && !currentReader.isAdmin){ %> 
                     <% if(pending){ %> 
                         <li class="list-group-item">
-                            <form action="/readers/<%= book._id %>/return" method="POST" class="text-center"></form>
+                            <form action="/readers/<%= book._id %>/return" method="POST" class="text-center">
                                 <button class="btn btn-success">Return</button>
                             </form>
                         </li>
@@ -29,7 +29,7 @@
                             <li class="list-group-item"><button class="btn btn-warning">Added to cart</button></li>
                         <% }else{ %> 
                             <li class="list-group-item">
-                                <form action="/readers/<% book._id %>/add-to-cart" method="POST">
+                                <form action="/readers/<%= book._id %>/add-to-cart" method="POST">
                                     <button class="btn btn-success">Add to cart</button>
                                 </form>
                             </li>
