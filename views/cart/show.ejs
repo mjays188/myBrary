@@ -5,36 +5,35 @@
         <h3 class="text-center mb-3"><%= currentReader.name %>'s Cart</h3>
         <hr>
         <% if(booksInCart.length > 0) { %>
-                    
-                <div class="d-flex justify-content-between mb-3" style="display: flex; flex-wrap: wrap;">
-                    <% booksInCart.forEach((book, i) => { %>
-                        <div class="col-md-4 col-sm-6">
-                            <div class="card" style="width: 18rem;">
-                                <img class="card-img-top" src="<%= book.image %>" alt="<%= book.name %>">
-                                <div class="card-body">
-                                    <h5 class="card-title text-center"><%= book.name %></h5>                        
-                                    <div class="form-group ">
-                                        <div class="input-group">
-                                            <div class="input-group-prepend">
-                                              <span class="input-group-text">Duration</span>
-                                            </div>
-                                            <input class="form-control" type="number" name="duration[<%= i %>]" min="2" max="6" value="4" form="checkout-form" required>
+            <div class="d-flex justify-content-start mb-3" style="display: flex; flex-wrap: wrap;">
+                <% booksInCart.forEach((book, i) => { %>
+                    <div class="col-md-4 col-sm-6">
+                        <div class="card" style="width: 18rem;">
+                            <img class="card-img-top" src="<%= book.image %>" alt="<%= book.name %>">
+                            <div class="card-body">
+                                <h5 class="card-title text-center"><%= book.name %></h5>                        
+                                <div class="form-group ">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">Rent Weeks</span>
                                         </div>
+                                        <input class="form-control" type="number" name="duration[<%= i %>]" min="2" max="6" value="4" form="checkout-form" required>
                                     </div>
-                                    <div class="d-flex justify-content-between">
-                                        <form action="/readers/<%= book._id %>/remove-from-cart" method="POST" id="remove-<%= i %>">
-                                            <button class="btn btn-danger" type="submit" form="remove-<%= i %>">Remove</button>
-                                        </form>
-                                        <a href="/books/<%= book.id%>">More Info>></a>
-                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <form action="/readers/<%= book._id %>/remove-from-cart" method="POST" id="remove-<%= i %>">
+                                        <button class="btn btn-danger" type="submit" form="remove-<%= i %>">Remove</button>
+                                    </form>
+                                    <a href="/books/<%= book.id%>">More Info>></a>
                                 </div>
                             </div>
                         </div>
-                    <% })%>
-                </div>
-                <div class="d-flex justify-content-center mt-4">
-                    <button class="btn btn-lg btn-success" type="submit" form="checkout-form">Checkout</button>
-                </div>
+                    </div>
+                <% })%>
+            </div>
+            <div class="d-flex justify-content-center mt-4">
+                <button class="btn btn-lg btn-success" type="submit" form="checkout-form">Checkout</button>
+            </div>
             <form action="/readers/<%= currentReader._id %>/checkout" method="POST" id="checkout-form">
             </form>
         <% } else { %>

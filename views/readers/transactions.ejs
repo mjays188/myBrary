@@ -1,0 +1,48 @@
+<!-- Display all the books in a paginated format, along with the search option -->
+<%- include('../partials/header')%>
+<div class="container mt-4">
+    <% if(currentReader && currentReader.isAdmin){ %> 
+        <% if(transactions.length){ %> 
+            <h1 class="text-center text-warning">All Transactions</h1>
+            <ul class="list-group">
+                <% transactions.forEach((transaction, i) => { %>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <div>
+                            <span class="badge badge-primary badge-pill"><%= readers[i].name %> </span>
+                        </div>
+                        <div>
+                            <span class="badge badge-primary badge-pill"><%= transaction.status %> </span>
+                            <span class="badge badge-primary badge-pill"><%= transaction.revenue %> </span>
+                        </div>
+                    </li>
+                <% }); %> 
+            </ul>
+        <% }else{ %> 
+            <h1 class="text-center text-warning">No Transactions Yet</h1>
+        <% } %> 
+    <% }else{ %> 
+        <% if(transactions.length){ %> 
+            <h1 class="text-center text-warning">All Transactions</h1>
+            <ul class="list-group">
+                <% transactions.forEach((transaction, i) => { %>
+                    <li class="list-group-item">
+                        <% if(transaction.status == "Borrowed"){ %> 
+                            <span class="badge badge-primary badge-pill mr-3"><%= transaction.status %></span>
+                            <span class="badge badge-primary mr-3"><%= transaction.borrow_date.toUTCString() %></span>
+
+                            <form action="/readers/<%= transaction.book.id %>/return" method="POST" class="text-center"></form>
+                                <button class="btn btn-success">Return</button>
+                            </form>
+                        <% }else{ %> 
+                            <span class="badge badge-primary badge-pill mr-3"><%= transaction.status %></span>
+                            <span class="badge badge-primary mr-3">Amount Paid: <%= transaction.revenue %></span>
+                        <% } %> 
+                    </li>
+                <% }); %> 
+            </ul>
+        <% }else{ %> 
+            <h1 class="text-center text-warning">No Transactions Yet</h1>
+        <% } %> 
+    <% } %> 
+</div>
+<%- include('../partials/footer')%>

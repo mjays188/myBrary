@@ -7,28 +7,26 @@ let transactionSchema = new mongoose.Schema({
             ref: "Reader"
         }
     },
-    //initially the amount will be qty*500 and after the book is returned the required amount will be kept remaining will be returned 
-    amount:{
-        type: Number,
-        required: true
-    },
     status: {
         type: String,
         default: "Borrowed"
     },
-    books: [{
+    book: {
         id:{
             type: mongoose.Schema.Types.ObjectId,
             ref: "Book"
-        },
-        book_name: String
-    }],
-    duration:[{
+        }
+    },
+    duration:{
         type: Number
-    }],
+    },
     borrow_date:{
         type: Date,
         default: Date.now()
+    },
+    revenue:{
+        type: Number,
+        default: 0
     }
 });
 

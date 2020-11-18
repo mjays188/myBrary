@@ -11,10 +11,6 @@ require("dotenv").config({ path: path.join(__dirname, "/.env")});
 
 //import all models
 const Reader = require("./models/reader");
-const Author = require("./models/author");
-const Book = require("./models/book");
-const Genre = require("./models/genre");
-const Transaction = require("./models/transaction");
 
 //import all routes
 const indexRoutes = require("./routes/index");
@@ -23,7 +19,6 @@ const authors = require("./routes/authors");
 const books = require("./routes/books");
 const comments = require("./routes/comments");
 const genres = require("./routes/genres");
-const transactions = require("./routes/transactions");
 
 const secrets = process.env;
 
@@ -88,6 +83,5 @@ app.use("/books", books);
 app.use("/books/:id/comments", comments);
 app.use("/authors", authors);
 app.use("/genres", genres);
-// app.use("/transactions", transactions);
 
 app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));

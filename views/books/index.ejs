@@ -13,7 +13,7 @@
         </div>
     <% } else { %>
         <h1 class="mt-3 mb-3 text-center">Available Books</h1>
-        <div class="d-flex justify-content-between" style="display: flex; flex-wrap: wrap;">
+        <div class="d-flex justify-content-start" style="display: flex; flex-wrap: wrap;">
             <% books.forEach(function(book){ %>
                 <div class="col-md-4 col-sm-6">
                     <div class="card" style="width: 18rem; margin: 5px;">
@@ -27,17 +27,26 @@
                                             <button class="btn btn-info">Update book</button>
                                         </form>
                                     <% }else{ %> 
-                                        <% let present = false; %> 
+                                        <% let presentInCart = false, pending = false; %> 
                                         <% for(let i=0;i<currentReader.cart.length;i++){ %>
                                             <% if(currentReader.cart[i]._id.equals(book._id)){ %> 
-                                                <% present = true; break; %> 
+                                                <% presentInCart = true; break; %> 
+                                            <% } %> 
+                                        <% } %>  
+                                        <% for(let i=0;i<booksToReturn.length;i++){ %>
+                                            <% if(booksToReturn[i].id.equals(book._id)){ %> 
+                                                <% pending = true; break; %> 
                                             <% } %> 
                                         <% } %> 
-                                        <% if(present){ %> 
-                                            <button class="btn btn-success">Added to cart</button>
+                                        <% if(presentInCart){ %> 
+                                            <button class="btn btn-warning">Added to cart</button>
+                                        <% }else if(pending){ %> 
+                                            <form action="/readers/<%= book._id %>/return" method="POST" class="text-center">
+                                                <button class="btn btn-primary">Return</button>
+                                            </form>
                                         <% }else{ %> 
                                             <form action="/readers/<%= book._id %>/add-to-cart" method="POST" class="text-center">
-                                                <button class="btn btn-secondary">Add to cart</button>
+                                                <button class="btn btn-success">Add to cart</button>
                                             </form>
                                         <% } %> 
                                     <% } %> 

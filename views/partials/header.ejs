@@ -28,7 +28,11 @@
           <ul class="navbar-nav ml-auto" style="margin-right: 5%;">
             <% if(currentReader){ %> 
               <li class="nav-item">
-                <a class="nav-link" href="/readers/<%= currentReader._id %>/show-cart">My Cart</a>
+                <% if(!currentReader.isAdmin){ %> 
+                  <a class="nav-link" href="/readers/<%= currentReader._id %>/show-cart">My Cart</a>
+                <% }else{ %> 
+                  <a class="nav-link" href="/readers/<%= currentReader._id %>/transactions">Transactions</a>
+                <% } %> 
               </li>
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>

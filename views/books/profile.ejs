@@ -6,20 +6,34 @@
             <img class="card-img-top" src="<%= book.image %> " alt="<%= book.name %> ">
         </div>
         <div>
-            <ul class=" list-group list-group-flush font-weight-bold">
+            <ul class=" list-group list-group-flush font-weight-bold" style="font-size: larger;">
                 <li class="list-group-item text-primary">Name: <%= book.name %></li>
                 <li class="list-group-item text-secondary">ISBN: <%= book.isbn %></li> 
                 <li class="list-group-item text-success">Qty-available: <%= book.quantity %></li>
                 <li class="list-group-item text-warning">Total Issues: <%= book.totalIssues %> </li>
                 <% if(currentReader && !currentReader.isAdmin){ %> 
-                    <% if(currentReader.cart.includes({_id: book})){ %> 
-                        <li class="list-group-item"><button class="btn btn-success">Added to cart</button></li>
-                    <% }else{ %> 
+                    <% if(pending){ %> 
                         <li class="list-group-item">
-                            <form action="/readers/<% book._id %>/add-to-cart" method="POST">
-                                <button class="btn btn-light">Add to cart</button>
+                            <form action="/readers/<%= book._id %>/return" method="POST" class="text-center"></form>
+                                <button class="btn btn-success">Return</button>
                             </form>
                         </li>
+                    <% }else{ %> 
+                        <% let presentInCart = false; %> 
+                        <% for(let i=0;i<currentReader.cart.length;i++){ %>
+                            <% if(currentReader.cart[i]._id.equals(book._id)){ %> 
+                                <% presentInCart = true; break; %> 
+                            <% } %> 
+                        <% } %> 
+                        <% if(presentInCart){ %> 
+                            <li class="list-group-item"><button class="btn btn-warning">Added to cart</button></li>
+                        <% }else{ %> 
+                            <li class="list-group-item">
+                                <form action="/readers/<% book._id %>/add-to-cart" method="POST">
+                                    <button class="btn btn-success">Add to cart</button>
+                                </form>
+                            </li>
+                        <% } %> 
                     <% } %> 
                 <% } %> 
             </ul>
@@ -28,7 +42,7 @@
     <!-- authors -->
     <hr>
     <h3 class="text-center text-success">Authors</h3>
-    <div class="d-flex justify-content-between mb-3" style="display: flex; flex-wrap: wrap;">
+    <div class="d-flex justify-content-start mb-3" style="display: flex; flex-wrap: wrap;">
         <% authorDetails.forEach(author => { %>
             <div class="col-md-4 col-sm-6">
                 <div class="card" style="width: 18rem;">

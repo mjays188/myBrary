@@ -2,15 +2,22 @@ let express = require("express");
 let router = express.Router();
 let Reader = require("../models/reader");
 let Book = require("../models/book");
+let Transaction = require("../models/transaction");
 const { isSignedIn, isNotAdmin, isVerified } = require("../middleware/index");
 
 //display profile page of a reader 
 router.get("/:id", isSignedIn, (req, res) => {
     (async function(){
         try {
-            const requestedId = req.params.id;
-            if(requestedId == req.user._id || req.user.isAdmin){
-                res.render("readers/profile");
+            const reader = req.user;
+            if(reader._id.equals(req.params.id)){
+                let transactions = new Array();
+                for(let i=0;i<reader.transactions.length;i++){
+                    const t = await Transaction.findById(reader.transactions[i]._id);
+                    transactions.push(t);
+                }
+                console.log(transactions);
+                res.render("readers/profile", { transactions });
             }else{
                 throw new Error("You are not permitted to do that");
             }
@@ -72,7 +79,7 @@ router.post("/:id/add-to-cart", isNotAdmin, isVerified, (req, res) => {
                             res.redirect("back");
                         }else throw new Error("Something went wrong, unable to add this book to cart");
                     }
-                }else throw new Error("Insufficient balance to add one more book, please manage your cart");
+                }else throw new Error("Insufficient balance to add one more book or issue limit is reached, please manage your dues");
 
             }else throw new Error("Requested book is unavailable");
         } catch (err) {
@@ -112,15 +119,86 @@ router.post("/:id/remove-from-cart", isNotAdmin, isVerified, (req, res) => {
     })();
 });
 
+//return a book
+router.post("/:id/return", isNotAdmin, isVerified, (req, res) => {
+    (async ()=>{
+        try {
+            const reader = req.user;
+            const book = await Book.findById(req.params.id);
+            if(typeof(book)==="object" && Object.keys(book)!==0){
+                const allTransactions = reader.transactions;
+                let currentDate = new Date();
+                let revenue = currentDate.getUTCMinutes();
+                let transactionToUpdate;
+                for(let i=0;i<allTransactions.length;i++){
+                    const t = await Transaction.findById(allTransactions[i]._id);
+                    if(t.book.id.equals(book._id)){
+                        transactionToUpdate = t;
+                        revenue -= t.borrow_date.getUTCMinutes();
+                        break;
+                    }
+                }
+
+                if(revenue > 60)
+                    revenue = 500;
+                //revenue generated
+                //add money to admin
+                const admin = await Reader.findOne({isAdmin: true});
+                admin.acc_balance += revenue;
+                await admin.save();
+                //remove movey from
+                reader.acc_balance += (500-revenue);
+                reader.current_issues -= 1;
+                await reader.save();
+                await Transaction.findByIdAndUpdate(transactionToUpdate._id, {
+                    $set: {status: "Returned"},
+                    $set: { revenue: revenue}
+                });
+                req.flash("success", "Book Successfully Returned ");
+                res.redirect("/books");
+            }else throw new Error("You are not permitted to do that");
+        } catch (err) {
+            req.flash("error", err.message);
+            res.redirect("back");
+        }
+    })();
+});
+
 //checkout
 router.post("/:id/checkout", isNotAdmin, (req, res)=>{
     (async ()=>{
         try {
             const reader = req.user;
+            const { duration } = req.body;
             const reader_transacted = await Reader.findById(req.params.id);
+            
             if(reader_transacted && reader_transacted._id.equals(reader._id)){
-                //make a transaction with status pending
-                //update balance, current_issues of reader, add this transaction to reader, empty the cart
+                if(reader.acc_balance >= duration.length * 500 && reader.current_issues + duration.length <= 6){
+                    let transaction, allTransactions = new Array();
+                    for(let i=0;i<duration.length;i++){
+                        duration[i] = parseInt(duration[i]) * 7;
+                        //make a transaction with status pending
+                        const t = await Transaction.create({
+                            reader: {id: reader_transacted}, 
+                            book: {id: reader.cart[i]},
+                            duration: duration[i]
+                        });
+                        allTransactions.push(t);
+                        const bookToRemove = await Book.findById(reader.cart[i]._id);
+                        const newBal = reader.acc_balance - 500
+                        await Reader.findByIdAndUpdate(reader._id,
+                            {
+                                $set: {acc_balance: newBal},
+                                $push: { transactions: {_id: t}},
+                                $inc: { current_issues: 1 },
+                                $pullAll: { cart: [bookToRemove]}
+                            }
+                        );
+                    }
+                    //send a order confirmation mail
+                    req.flash("success", "Order Successful, details have been sent to your mail");
+                    res.redirect("/books");
+                }else throw new Error("Insufficient account balance or issue limit reached!");
             }else throw new Error("You aren't permitted to do this");
         } catch (err) {
             req.flash("error", err.message);
@@ -129,7 +207,38 @@ router.post("/:id/checkout", isNotAdmin, (req, res)=>{
     })();
 });
 
+//show transactions
+router.get("/:id/transactions", isVerified, (req, res) => {
+    (async ()=>{
+        try {
+            const reader = await Reader.findById(req.params.id);
+            if(reader._id.equals(req.user._id)){
+                let transactions, readers = new Array();
+                if(reader.isAdmin){
+                    transactions = await Transaction.find({});
+                    for(let i=0;i<transactions.length;i++){
+                        const r = await Reader.findById(transactions[i].reader.id);
+                        readers.push(r);
+                    }
+                }else{
+                    readers.push(reader);
+                    transactions = new Array();
+                    let transactionIds = reader.transactions;
+                    for(let i=0;i<transactionIds.length;i++){
+                        const t = await Transaction.findById(transactionIds[i]._id);
+                        transactions.push(t);
+                    }
+                }
+                res.render("readers/transactions", {transactions, readers});
+            }else throw new Error("You are not permitted to do that");
+        } catch (err) {
+            req.flash("error", err.message);
+            res.redirect("back");
+        }
+    })();
+});
 //update balance
+//get update form
 router.get("/:id/add-money", isNotAdmin, isVerified, (req, res)=>{
     (async ()=>{
         try {
@@ -143,24 +252,39 @@ router.get("/:id/add-money", isNotAdmin, isVerified, (req, res)=>{
         }
     })();
 });
-
+//update in db
 router.put("/:id/add-money", isNotAdmin, isVerified, (req, res)=>{
     (async ()=>{
         try {
             const reader = await Reader.findById(req.params.id);
             if(reader && reader._id.equals(req.user._id)){
-                console.log("Im here");
-                const {amountToAdd} = req.body;
-                const newBal = reader.acc_balance + amountToAdd;
+                const newBal = parseInt(reader.acc_balance) + parseInt(req.body.amountToAdd);
                 if(newBal <= 3000){
-                    
-                    const updatedReader = await Reader.findByIdAndUpdate(reader._id, { acc_balance: newBal});
-                    console.log(updatedReader);
+                    const updatedReader = await Reader.updateOne({_id: reader._id}, { acc_balance: newBal});
                     if(updatedReader){
                         req.flash("success", "Amount successfully added");
                         res.redirect("/readers/" + reader._id);
                     }else throw new Error("Something went wrong");
                 }else new Error("Maximum allowed balance is Rs.3000");
+            }else throw new Error("You are not permitted to do this");
+        } catch (err) {
+            req.flash("error", err.message);
+            res.redirect("back");
+        }
+    })();
+});
+
+//empty-money
+router.put("/:id/empty-money", isNotAdmin, isVerified, (req, res)=>{
+    (async ()=>{
+        try {
+            const reader = await Reader.findById(req.params.id);
+            if(reader && reader._id.equals(req.user._id)){
+                const updatedReader = await Reader.updateOne({_id: reader._id}, { acc_balance: 0});
+                if(updatedReader){
+                    req.flash("success", "Account successfully Emptied");
+                    res.redirect("/readers/" + reader._id);
+                }else throw new Error("Something went wrong");
             }else throw new Error("You are not permitted to do this");
         } catch (err) {
             req.flash("error", err.message);

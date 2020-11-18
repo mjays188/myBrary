@@ -5,21 +5,31 @@ let Book = require("../models/book");
 let Author = require("../models/author");
 let Genre = require("../models/genre");
 let Reader = require("../models/reader");
+let Transaction = require("../models/transaction");
 let Comment = require("../models/comment");
 let {isAdmin, isNotAdmin} = require("../middleware");
 
 //Display all Books - (everyone)
 router.get("/", (req, res) => {
-    async function getAllBooks() {
-        return await Book.find({});
-    }
-    getAllBooks().then(allBooks => {
-        let booksInCart = new Array();
-        if(req.isAuthenticated()){
-            booksInCart = req.user.cart;
+    (async ()=>{
+        try {
+            const books = await Book.find({});
+            let booksInCart = new Array(), booksToReturn = new Array();
+            if(req.isAuthenticated()){
+                const reader = req.user;
+                for(let i=0;i<reader.transactions.length;i++){
+                    const t = await Transaction.findById(reader.transactions[i]._id);
+                    if(t && t.status=="Borrowed"){
+                        booksToReturn.push(t.book);
+                    }
+                }
+            }
+            res.render("books/index", {books, booksToReturn});
+        } catch (err) {
+            req.flash("error", err.message);
+            res.redirect("back");
         }
-        res.render("books/index", {books: allBooks, booksInCart});
-    }).catch(err => console.log(err));
+    })();
 });
 
 //search results
@@ -149,7 +159,19 @@ router.get("/:id", (req, res) => {
                     const foundComment = await Comment.findById(commentIDs[i]._id);
                     comments.push(foundComment);
                 }
-                res.render("books/profile", {book: foundBook, authorDetails, genreDetails, comments});
+                const books = await Book.find({});
+                let pending = false;
+                if(req.isAuthenticated()){
+                    const reader = req.user;
+                    for(let i=0;i<reader.transactions.length;i++){
+                        const t = await Transaction.findById(reader.transactions[i]._id);
+                        if(t.status=="Borrowed" && t.book.id.equals(req.params.id)){
+                            pending = true;
+                            break;
+                        }
+                    }
+                }
+                res.render("books/profile", {book: foundBook, authorDetails, genreDetails, comments, pending});
             }
             else throw foundBook;
         } catch (err) {
