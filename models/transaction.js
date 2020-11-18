@@ -23,12 +23,11 @@ let transactionSchema = new mongoose.Schema({
         },
         book_name: String
     }],
-    requested_weeks:[{
+    duration:[{
         type: Number
     }],
     borrow_date:{
         type: Date,
-        required: true,
         default: Date.now()
     }
 });

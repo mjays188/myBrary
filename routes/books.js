@@ -4,8 +4,9 @@ let passport = require("passport");
 let Book = require("../models/book");
 let Author = require("../models/author");
 let Genre = require("../models/genre");
+let Reader = require("../models/reader");
 let Comment = require("../models/comment");
-let {isAdmin} = require("../middleware");
+let {isAdmin, isNotAdmin} = require("../middleware");
 
 //Display all Books - (everyone)
 router.get("/", (req, res) => {
@@ -13,7 +14,11 @@ router.get("/", (req, res) => {
         return await Book.find({});
     }
     getAllBooks().then(allBooks => {
-        res.render("books/index", {books: allBooks});
+        let booksInCart = new Array();
+        if(req.isAuthenticated()){
+            booksInCart = req.user.cart;
+        }
+        res.render("books/index", {books: allBooks, booksInCart});
     }).catch(err => console.log(err));
 });
 

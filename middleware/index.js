@@ -3,6 +3,13 @@ const Comment = require("../models/comment");
 const Book = require("../models/book");
 
 let middlewareObj = {
+    isVerified: function(req, res, next){
+        if(req.isAuthenticated() && req.user.is_verified){
+            return next();
+        }
+        req.flash("error", "You need to be a Verified Reader to do that, please verify your email address!");
+        res.redirect("back");
+    },
     isSignedOut: function(req, res, next){
                     if(!req.isAuthenticated()){
                         return next();
@@ -25,7 +32,7 @@ let middlewareObj = {
         res.redirect("/");
     },
     isNotAdmin: function(req, res, next){
-        if(req.isAuthenticated()){
+        if(req.isAuthenticated() && !req.user.isAdmin){
             return next();
         }
         req.flash("error", "You can't be an administrator to do this!");

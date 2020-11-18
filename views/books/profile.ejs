@@ -11,6 +11,17 @@
                 <li class="list-group-item text-secondary">ISBN: <%= book.isbn %></li> 
                 <li class="list-group-item text-success">Qty-available: <%= book.quantity %></li>
                 <li class="list-group-item text-warning">Total Issues: <%= book.totalIssues %> </li>
+                <% if(currentReader && !currentReader.isAdmin){ %> 
+                    <% if(currentReader.cart.includes({_id: book})){ %> 
+                        <li class="list-group-item"><button class="btn btn-success">Added to cart</button></li>
+                    <% }else{ %> 
+                        <li class="list-group-item">
+                            <form action="/readers/<% book._id %>/add-to-cart" method="POST">
+                                <button class="btn btn-light">Add to cart</button>
+                            </form>
+                        </li>
+                    <% } %> 
+                <% } %> 
             </ul>
         </div>    
     </div>

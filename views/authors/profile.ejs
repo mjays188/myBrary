@@ -29,7 +29,7 @@
         <p>No books yet written by this author!</p>        
     <% } %>  
     <% if(currentReader && currentReader.isAdmin){ %> 
-        <div class="d-flex">
+        <div class="d-flex mb-5">
             <div class="mr-3"><a href="/authors/<%= author._id %>/add-book" class="btn btn-primary">Add a book</a></div>
             <div>
                 <form action="/authors/<%= author._id%>?_method=DELETE" method="POST">
@@ -37,6 +37,6 @@
                 </form>
             </div>
         </div>
-    <% } %> 
+    <% } %>
 </div>
 <%- include('../partials/footer')%>

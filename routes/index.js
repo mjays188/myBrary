@@ -51,12 +51,15 @@ router.post("/signup", isSignedOut, function(req, res){
     (async function(){
         try {
             let { name, username, password, confirm_password } = req.body;
-            let isAdmin = false;
+            let isAdmin = false, acc_balance = 0, address = "";
             if(req.body.hasOwnProperty("secret_password")){
                 isAdmin = true;
                 if(req.body.secret_password !== process.env.ADMIN_ENTRY_SECRET){
                     throw new TypeError("Secret Invalid! please go to reader register page!");
                 }
+            }else{
+                address = req.body.address;
+                acc_balance = req.body.acc_balance;
             }
             if(password === confirm_password){
                 const token = jwt.sign(
@@ -64,7 +67,12 @@ router.post("/signup", isSignedOut, function(req, res){
                     process.env.JWT_REGISTER_SECRET,
                     { expiresIn: '2d' }
                 );
-                const newReader = new Reader({username: username, isAdmin, name, verification_token: token});
+                let newReader;
+                if(isAdmin){
+                    newReader = new Reader({username: username, isAdmin, name, verification_token: token, acc_balance});
+                }else{
+                    newReader = new Reader({username: username, isAdmin, name, verification_token: token, address, acc_balance});
+                }
                 let reader = await Reader.register(newReader, password);
                 if(reader){
                     passport.authenticate("local")(req, res, function(){

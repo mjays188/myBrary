@@ -1,0 +1,53 @@
+<!-- List all authors, paginated, have a search option -->
+<%- include('../partials/header')%>
+<div class="container mt-5">
+    <% if(currentReader && !currentReader.isAdmin){ %> 
+        <h3 class="text-center mb-3"><%= currentReader.name %>'s Cart</h3>
+        <hr>
+        <% if(booksInCart.length > 0) { %>
+                    
+                <div class="d-flex justify-content-between mb-3" style="display: flex; flex-wrap: wrap;">
+                    <% booksInCart.forEach((book, i) => { %>
+                        <div class="col-md-4 col-sm-6">
+                            <div class="card" style="width: 18rem;">
+                                <img class="card-img-top" src="<%= book.image %>" alt="<%= book.name %>">
+                                <div class="card-body">
+                                    <h5 class="card-title text-center"><%= book.name %></h5>                        
+                                    <div class="form-group ">
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                              <span class="input-group-text">Duration</span>
+                                            </div>
+                                            <input class="form-control" type="number" name="duration[<%= i %>]" min="2" max="6" value="4" form="checkout-form" required>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <form action="/readers/<%= book._id %>/remove-from-cart" method="POST" id="remove-<%= i %>">
+                                            <button class="btn btn-danger" type="submit" form="remove-<%= i %>">Remove</button>
+                                        </form>
+                                        <a href="/books/<%= book.id%>">More Info>></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% })%>
+                </div>
+                <div class="d-flex justify-content-center mt-4">
+                    <button class="btn btn-lg btn-success" type="submit" form="checkout-form">Checkout</button>
+                </div>
+            <form action="/readers/<%= currentReader._id %>/checkout" method="POST" id="checkout-form">
+            </form>
+        <% } else { %>
+            <div class="jumbotron">
+                <h1 class="display-4">Oops!</h1>
+                <p class="lead">Your Cart is empty</p>
+                <hr class="my-4">
+                <p>Explore all Books?</p>
+                <p class="lead">
+                  <a class="btn btn-primary btn-lg" href="/books" role="button">Books</a>
+                </p>
+            </div>
+        <% } %>      
+    <% } %> 
+</div>
+<%- include('../partials/footer')%>

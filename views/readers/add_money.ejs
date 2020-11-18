@@ -1,0 +1,23 @@
+
+<%- include('../partials/header')%>
+<div class="container d-flex flex-column mt-4">
+    <% if(currentReader && !currentReader.isAdmin){ %> 
+    <div>
+        <h1 class="text-center">Add balance</h1>
+        <form action="/readers/<%= currentReader._id %>/add-money?_method=PUT" method="POST">
+            <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text"> Amount </span>
+                    </div>
+                    <input class="form-control" type="number" name="amountToAdd" min="500" max="<%= 3000 - currentReader.acc_balance %>" value="500">
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" type="submit">Add</button>
+            <button class="btn btn-warning"><a href="/readers/<%= currentReader._id %>">Go Back</a></button>
+        </form>
+    </div>
+    <% } %> 
+</div>
+<%- include('../partials/footer')%>

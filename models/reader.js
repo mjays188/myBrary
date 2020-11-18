@@ -29,7 +29,22 @@ let readerSchema = new mongoose.Schema({
     //account balance
     acc_balance:{
         type: Number,
-        default: 1000
+        required: true,
+        validate: [{
+            validator: (num) => {
+                return num >= 0 ;
+            },
+            message: "Minimum account balance is 0"
+        },  {
+            validator: (num) => {
+                return num <=3000 ;
+            },
+            message: "Maximum allowed balance is 3000"
+        }]
+    },
+    current_issues:{
+        type: Number,
+        default: 0
     },
     //transactions - array of transactions
     transactions: [{
@@ -48,7 +63,6 @@ let readerSchema = new mongoose.Schema({
     //delivery_address
     address: {
         type: String,
-        required: true
     }
 });
 
