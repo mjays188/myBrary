@@ -306,7 +306,7 @@ router.put("/:id/add-money", isNotAdmin, isVerified, (req, res)=>{
 });
 
 //empty-money
-router.put("/:id/empty-money", isNotAdmin, isVerified, (req, res)=>{
+router.put("/:id/empty-money", isVerified, (req, res)=>{
     (async ()=>{
         try {
             const reader = await Reader.findById(req.params.id);
