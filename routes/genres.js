@@ -25,7 +25,11 @@ router.get("/search/:data", (req, res) => {
         try {
             const genres = await Genre.find({name: new RegExp(req.params.data, "i")});
             if(genres){
-                res.render("genres/index", {genres});
+                let bookCount = new Array();
+                genres.forEach(genre => {
+                    bookCount.push(genre.books.length);
+                });
+                res.render("genres/index", {genres, bookCount});
             }else throw new Error(`No ${req.params.data} books found in the store`);
         } catch (err) {
             req.flash("error", err.message);
