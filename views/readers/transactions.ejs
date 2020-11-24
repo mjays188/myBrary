@@ -8,7 +8,11 @@
                 <% transactions.forEach((transaction, i) => { %>
                     <li class="list-group-item d-flex justify-content-between">
                         <div>
-                            <span class="badge badge-primary badge-pill"><%= readers[i].name %> </span>
+                            <% if(readers[i]){ %> 
+                                <span class="badge badge-primary badge-pill"><%= (readers[i].name) %> </span>
+                            <% }else{ %> 
+                                <span class="badge badge-primary badge-pill">N/A</span>
+                            <% } %> 
                         </div>
                         <div>
                             <span class="badge badge-primary badge-pill"><%= transaction.status %> </span>
